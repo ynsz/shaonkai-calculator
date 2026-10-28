@@ -4,9 +4,22 @@ const sliderCaps={familyN:30,twoAdultN:30,childN:12,teacherN:8,giftTeacherN:8,me
 const emojis={familyN:'🏠',twoAdultN:'👨‍👩‍👧',budget:'💰',meal:'🍽️',gift:'🎁',childMeal:'🍙',childN:'🧒',teacherN:'👩‍🏫',giftTeacherN:'💐',mealN:'👨‍👩‍👧',giftN:'🏠'};
 const fmt=n=>Math.round(n).toLocaleString('ja-JP')+'円';
 const params=new URLSearchParams(location.search),vals={},fields=document.getElementById('fields');
+// Compact, versioned, client-side share link. No server or personal data storage.
+const compactKeys=defs.map(d=>d[0]);
+const compactRaw=params.get('s');
+let compactValues=null;
+if(compactRaw&&/^1(?:\.[0-9a-z]+){11}$/.test(compactRaw)){
+ const parts=compactRaw.split('.').slice(1);
+ const parsed=parts.map(p=>parseInt(p,36));
+ if(parsed.every((n,i)=>Number.isSafeInteger(n)&&n>=defs[i][2]&&n<=defs[i][3]))compactValues=parsed;
+}
+function shareUrl(){
+ const encoded=defs.map(d=>vals[d[0]].toString(36)).join('.');
+ return location.origin+location.pathname+'?s=1.'+encoded;
+}
 for(const [key,label,min,max,step,initial,unit] of defs){
- const raw=params.get(key),n=Number(raw);
- vals[key]=raw!==null&&raw.trim()!==''&&Number.isInteger(n)&&n>=min&&n<=max?n:initial;
+ const raw=params.get(key),n=Number(raw),compactIndex=compactKeys.indexOf(key);
+ vals[key]=compactValues?compactValues[compactIndex]:(raw!==null&&raw.trim()!==''&&Number.isInteger(n)&&n>=min&&n<=max?n:initial);
  if(key==='budget')continue; // 予算は鉛筆アイコンからモーダルで設定
  const div=document.createElement('div');div.className='field '+(unit==='円'?'money':'people');
  div.innerHTML=`<div class="type-pill">${unit==='円'?'金額':'人数'}</div><div class="fieldhead"><label for="edit-${key}">${label}</label><output id="out-${key}"><input id="edit-${key}" class="editbox" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="${label}" value="${vals[key]}"><span class="edit-unit">${unit}</span><span class="edit-pencil" aria-hidden="true">✎</span></output></div><div class="slider-wrap" id="wrap-${key}"><input aria-label="${label}のスライダー" id="${key}" type="range" min="${min}" max="${sliderCaps[key]??max}" step="${step}" value="${vals[key]}"><span class="emoji-thumb" aria-hidden="true">${emojis[key]}</span></div>`;
@@ -155,7 +168,7 @@ function shareText(){
  '※先生分の負担は1家庭分。追加の大人・子どもの食事代は同伴家庭が負担します。',
  '※全体の必要予算は食事代・プレゼント代の合計です。会場費などは含みません。',
  '※金額は概算です。各家庭の分担額を円単位に丸めると差額が生じる場合があります。',
- '','シミュレーター：https://shaonkai-calculator.pages.dev/'
+ '','同じ設定で開く：'+shareUrl()
  ].join('\n');
 }
 const shareDialog=document.getElementById('shareDialog');
