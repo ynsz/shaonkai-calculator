@@ -69,7 +69,7 @@ for(const [key,label,min,max,step,initial,unit] of defs){
   if(!details){details=document.createElement('details');details.id='extraDetails';details.className='split-details';details.innerHTML='<summary>会場費などを追加</summary><p class="split-note">会場費などは参加家庭で均等に負担します。</p>';fields.appendChild(details)}
   details.appendChild(div);
  }else{fields.appendChild(div);}
- if(key==='familyN'){
+ if(key==='teacherN'){
   const card=document.createElement('section');card.className='sharing-card';
   card.innerHTML='<h3>先生の費用の分担</h3><div class="sharing-line"><span>先生の食事代</span><strong id="mealSplitDisplay">—</strong></div><div class="sharing-line"><span>プレゼント代</span><strong id="giftSplitDisplay">—</strong></div><p class="sharing-note" id="sharingPublicNote"></p>';
   fields.appendChild(card);
