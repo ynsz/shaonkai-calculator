@@ -251,7 +251,7 @@ function shareText(){
   '参加'+vals.familyN+'家庭／先生'+vals.teacherN+'名／子ども'+vals.childN+'名',
   '大人の食事代 '+fmt(vals.meal)+'・子ども '+fmt(vals.childMeal),
   '先生へのプレゼント '+fmt(vals.gift)+'/人',
- ...(vals.giftN>vals.familyN?['不参加家庭のプレゼント代負担：約'+fmt(gift)+'/家庭']:[]),
+ ...(vals.giftN>vals.familyN?['不参加家庭のプレゼント代負担：約'+fmt(giftShare)+'/家庭']:[]),
   ...(extra?['会場費など '+fmt(extra)]:[]),
   '',
   '同じ設定で開く：'+shareUrl(),
