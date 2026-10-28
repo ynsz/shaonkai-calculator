@@ -60,7 +60,7 @@ for(const [key,label,min,max,step,initial,unit] of defs){
   let details=document.getElementById('splitDetails');
   if(!details){
    details=document.createElement('details');details.id='splitDetails';details.className='split-details';
-   details.innerHTML='<summary>先生の食事代・プレゼント代の分担</summary><p class="split-note">プレゼント代の負担家庭数には、当日参加しない家庭も含められます。先生の人数も個別に変更できます。</p>';
+   details.innerHTML='<summary>先生の費用の分担を変更</summary><p class="split-note" id="sharingRuleNote">先生の食事代とプレゼント代は参加家庭で分担します。</p>';
    fields.appendChild(details);
   }
   details.appendChild(div);
@@ -126,6 +126,13 @@ function render(activeKey){
  // Only participating households can split the teachers' meal bill.
  vals.mealN=Math.min(vals.mealN,vals.familyN);
  persistSettings();
+ const splitDetails=document.getElementById('splitDetails');
+ if(splitDetails){
+  const summary=splitDetails.querySelector('summary');
+  summary.textContent='先生の費用の分担を変更';
+  const note=document.getElementById('sharingRuleNote');
+  if(note)note.textContent='先生の食事代：'+vals.mealN+'家庭で負担 ／ プレゼント代：'+vals.giftN+'家庭で負担'+(vals.giftN>vals.familyN?'（不参加家庭を含む）':'');
+ }
 
  for(const [key,,min,max,step] of defs){
   if(key==='budget')continue;
@@ -216,7 +223,14 @@ dialog.addEventListener('click',e=>{
    budgetInput.reportValidity();
  }
 });
-document.getElementById('reset').onclick=()=>{for(const [k,,,,,initial] of defs){vals[k]=initial}document.activeElement?.blur();render()};
+document.getElementById('reset').onclick=()=>{
+ for(const [k,,,,,initial] of defs)vals[k]=initial;
+ document.activeElement?.blur();
+ if(location.search)history.replaceState(null,'',location.pathname+location.hash);
+ lastFamilyN=vals.familyN;
+ lastTeacherN=vals.teacherN;
+ render();
+};
 function shareText(){
  const extra=vals.venueCost+vals.decorCost+vals.otherCost;
  const mealShare=vals.teacherN*vals.meal/vals.mealN;
