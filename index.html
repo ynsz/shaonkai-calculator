@@ -3,6 +3,28 @@ const defs=[['budget','予算',1,1000000,500,8000,'円'],['familyN','当日参�
 const sliderCaps={familyN:50,twoAdultN:50,childN:30,teacherN:12,giftTeacherN:12,mealN:50,giftN:50};
 const emojis={familyN:'🏠',twoAdultN:'👨‍👩‍👧',budget:'💰',meal:'🍽️',gift:'🎁',childMeal:'🍙',childN:'🧒',teacherN:'👩‍🏫',giftTeacherN:'💐',mealN:'👨‍👩‍👧',giftN:'🏠',venueCost:'🏛️',decorCost:'🎀',otherCost:'🧾'};
 const fmt=n=>Math.round(n).toLocaleString('ja-JP')+'円';
+// Keep the active number visible above Android's virtual keyboard.
+let keyboardScrollFrame=0;
+function keepFocusedNumberVisible(){
+ cancelAnimationFrame(keyboardScrollFrame);
+ keyboardScrollFrame=requestAnimationFrame(()=>{
+  const active=document.activeElement;
+  if(!active?.classList?.contains('editbox'))return;
+  const vp=window.visualViewport;
+  const visibleTop=vp?vp.offsetTop:0;
+  const visibleBottom=visibleTop+(vp?vp.height:window.innerHeight);
+  const rect=active.getBoundingClientRect();
+  const bottomMargin=24,topMargin=90;
+  if(rect.bottom>visibleBottom-bottomMargin){
+   window.scrollBy({top:rect.bottom-(visibleBottom-bottomMargin),behavior:'instant'});
+  }else if(rect.top<visibleTop+topMargin){
+   window.scrollBy({top:rect.top-(visibleTop+topMargin),behavior:'instant'});
+  }
+ });
+}
+window.visualViewport?.addEventListener('resize',keepFocusedNumberVisible);
+window.visualViewport?.addEventListener('scroll',keepFocusedNumberVisible);
+
 const params=new URLSearchParams(location.search),vals={},fields=document.getElementById('fields');
 // Compact, versioned, client-side share link. No server or personal data storage.
 const STORAGE_KEY='shaonkai-calculator-settings-v1';
@@ -59,7 +81,7 @@ for(const [key,label,min,max,step,initial,unit] of defs){
  // Tapping the unit or pencil should focus the numeric field as well.
  const output=document.getElementById('out-'+key);
  output.addEventListener('click',e=>{if(e.target!==edit){edit.focus();edit.select()}});
- edit.addEventListener('focus',()=>{edit.select()});
+ edit.addEventListener('focus',()=>{edit.select();requestAnimationFrame(keepFocusedNumberVisible);setTimeout(keepFocusedNumberVisible,180);setTimeout(keepFocusedNumberVisible,400)});
  edit.addEventListener('input',()=>{fitEdit();const raw=edit.value.trim();if(!/^\d+$/.test(raw))return;const next=Number(raw);if(Number.isSafeInteger(next)&&next>=min&&next<=max){vals[key]=next;render(key)}});
  const commit=()=>{const raw=edit.value.trim();const n=Number(raw);if(/^\d+$/.test(raw)&&Number.isSafeInteger(n)){vals[key]=Math.max(min,Math.min(max,n));}if(key==='twoAdultN')vals[key]=Math.min(vals[key],vals.familyN);if(key==='mealN')vals[key]=Math.min(vals[key],vals.familyN);edit.value=String(vals[key]);fitEdit();render()};
  edit.addEventListener('blur',commit);
