@@ -285,24 +285,31 @@ window.visualViewport?.addEventListener('resize',updateSticky);
 window.visualViewport?.addEventListener('scroll',updateSticky);
 // Some Android local-file viewers do not dispatch normal scroll events consistently.
 
-// Animate expandable settings while preserving native details semantics.
+// Smooth disclosure animation across iOS Safari and Android.
 for(const details of document.querySelectorAll('.split-details')){
  const summary=details.querySelector('summary');
  let animation=null;
+ let isClosing=false;
  summary.addEventListener('click',event=>{
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   event.preventDefault();
   if(animation){animation.cancel();animation=null}
-  const start=details.getBoundingClientRect().height;
-  const wasOpen=details.open;
-  if(!wasOpen)details.open=true;
-  const endOpen=details.getBoundingClientRect().height;
-  const end=wasOpen?summary.getBoundingClientRect().height+12:endOpen;
+  const opening=!details.open||isClosing;
+  const startHeight=details.getBoundingClientRect().height;
+  if(opening)details.open=true;
+  const fullHeight=details.scrollHeight;
+  const closedHeight=summary.getBoundingClientRect().height+12;
+  const endHeight=opening?fullHeight:closedHeight;
+  isClosing=!opening;
   details.style.overflow='hidden';
-  animation=details.animate([{height:start+'px',opacity:1},{height:end+'px',opacity:wasOpen?0.9:1}],{duration:wasOpen?200:280,easing:'cubic-bezier(.2,.8,.2,1)'});
+  animation=details.animate(
+   [{height:startHeight+'px'},{height:endHeight+'px'}],
+   {duration:opening?320:250,easing:'cubic-bezier(0.22,1,0.36,1)'}
+  );
   animation.onfinish=()=>{
-   if(wasOpen)details.open=false;
+   if(!opening)details.open=false;
    details.style.overflow='';
+   isClosing=false;
    animation=null;
   };
   animation.oncancel=()=>{details.style.overflow=''};
