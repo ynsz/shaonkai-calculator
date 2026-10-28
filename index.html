@@ -52,7 +52,7 @@ for(const [key,label,min,max,step,initial,unit] of defs){
   details.innerHTML='<summary>先生の食事代・プレゼント代の分担</summary><p class="split-note">先生の費用は参加家庭で均等に分担します。必要な場合だけ変更してください。</p>';
   fields.appendChild(details);
  }
- div.innerHTML=`<div class="type-pill">${unit==='円'?'金額':'人数'}</div><div class="fieldhead"><label for="edit-${key}">${label}</label><output id="out-${key}"><input id="edit-${key}" class="editbox" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="${label}" value="${vals[key]}"><span class="edit-unit">${unit}</span><span class="edit-pencil" aria-hidden="true">✎</span></output></div><div class="slider-wrap" id="wrap-${key}"><input aria-label="${label}のスライダー" id="${key}" type="range" min="${min}" max="${sliderCaps[key]??max}" step="${step}" value="${vals[key]}"><span class="emoji-thumb" aria-hidden="true">${emojis[key]}</span></div>`;
+ div.innerHTML=`<div class="type-pill">${unit==='円'?'金額':'人数'}</div><div class="fieldhead"><label for="edit-${key}">${label}</label><output id="out-${key}"><span class="edit-pencil" aria-hidden="true">✎</span><input id="edit-${key}" class="editbox" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="${label}" value="${vals[key]}"><span class="edit-unit">${unit}</span></output></div><div class="slider-wrap" id="wrap-${key}"><input aria-label="${label}のスライダー" id="${key}" type="range" min="${min}" max="${sliderCaps[key]??max}" step="${step}" value="${vals[key]}"><span class="emoji-thumb" aria-hidden="true">${emojis[key]}</span></div>`;
  const edit=document.getElementById('edit-'+key),slider=document.getElementById(key);
  // Tapping the unit or pencil should focus the numeric field as well.
  const output=document.getElementById('out-'+key);
