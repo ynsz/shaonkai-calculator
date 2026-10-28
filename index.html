@@ -5,6 +5,15 @@ const emojis={familyN:'🏠',twoAdultN:'👨‍👩‍👧',budget:'💰',meal:'
 const fmt=n=>Math.round(n).toLocaleString('ja-JP')+'円';
 const params=new URLSearchParams(location.search),vals={},fields=document.getElementById('fields');
 // Compact, versioned, client-side share link. No server or personal data storage.
+const STORAGE_KEY='shaonkai-calculator-settings-v1';
+let savedSettings={};
+try {
+ const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+ if(stored&&typeof stored==='object'&&!Array.isArray(stored))savedSettings=stored;
+} catch(e) { /* Storage may be disabled */ }
+function persistSettings(){
+ try { localStorage.setItem(STORAGE_KEY,JSON.stringify(vals)); } catch(e) { /* Private mode or quota */ }
+}
 const compactKeys=defs.map(d=>d[0]);
 const compactRaw=params.get('s');
 let compactValues=null;
@@ -19,7 +28,9 @@ function shareUrl(){
 }
 for(const [key,label,min,max,step,initial,unit] of defs){
  const raw=params.get(key),n=Number(raw),compactIndex=compactKeys.indexOf(key);
- vals[key]=compactValues?compactValues[compactIndex]:(raw!==null&&raw.trim()!==''&&Number.isInteger(n)&&n>=min&&n<=max?n:initial);
+ const saved=savedSettings[key];
+ const valid=(v)=>Number.isSafeInteger(v)&&v>=min&&v<=(key==='budget'?1000000:max);
+ vals[key]=compactValues?compactValues[compactIndex]:(raw!==null&&raw.trim()!==''&&valid(n)?n:valid(saved)?saved:initial);
  if(key==='budget')continue; // 予算は鉛筆アイコンからモーダルで設定
  const div=document.createElement('div');div.className='field '+(unit==='円'?'money':'people');
  div.innerHTML=`<div class="type-pill">${unit==='円'?'金額':'人数'}</div><div class="fieldhead"><label for="edit-${key}">${label}</label><output id="out-${key}"><input id="edit-${key}" class="editbox" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="${label}" value="${vals[key]}"><span class="edit-unit">${unit}</span><span class="edit-pencil" aria-hidden="true">✎</span></output></div><div class="slider-wrap" id="wrap-${key}"><input aria-label="${label}のスライダー" id="${key}" type="range" min="${min}" max="${sliderCaps[key]??max}" step="${step}" value="${vals[key]}"><span class="emoji-thumb" aria-hidden="true">${emojis[key]}</span></div>`;
@@ -56,6 +67,7 @@ for(const [key,label,min,max,step,initial,unit] of defs){
 
 }
 function render(activeKey){
+ persistSettings();
  // A household with two adults must be included among participating households.
  vals.twoAdultN=Math.min(vals.twoAdultN,vals.familyN);
  // Only participating households can split the teachers' meal bill.
