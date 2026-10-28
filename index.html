@@ -145,17 +145,18 @@ function render(activeKey){
   const wrap=document.getElementById('wrap-'+key);wrap.style.setProperty('--fraction',fraction);wrap.style.setProperty('--progress',(fraction*100)+'%');
  }
  const teacherMealShare=vals.teacherN*vals.meal/vals.mealN,gift=vals.giftTeacherN*vals.gift/vals.giftN,extra=vals.venueCost+vals.decorCost+vals.otherCost,extraShare=extra/vals.familyN,total=vals.meal+teacherMealShare+gift+extraShare;
+ const shownTotal=Math.round(total);
  document.getElementById('total').textContent=fmt(total);
  const unevenSharing=vals.mealN!==vals.familyN||vals.giftN<vals.familyN;
  document.getElementById('budgetContext').textContent=unevenSharing
   ?'予算判定は、先生の食事代・プレゼント代を両方負担する大人1人の家庭を想定しています。負担しない家庭の会費は異なります。'
   :'予算判定は大人1人で参加する場合の会費です。';
  document.getElementById('stickyAmount').textContent=fmt(total);
- document.getElementById('stickyStatus').textContent=total<=vals.budget?'予算内':'予算オーバー';
- document.getElementById('stickyStatus').className='sticky-status'+(total<=vals.budget?' ok':'');
- const budgetLabel=document.getElementById('budgetLabel');budgetLabel.textContent='予算'+fmt(vals.budget)+(total<=vals.budget?'内':'超え');document.getElementById('budgetTrigger').classList.toggle('over',total>vals.budget);
+ document.getElementById('stickyStatus').textContent=shownTotal<=vals.budget?'予算内':'予算オーバー';
+ document.getElementById('stickyStatus').className='sticky-status'+(shownTotal<=vals.budget?' ok':'');
+ const budgetLabel=document.getElementById('budgetLabel');budgetLabel.textContent='予算'+fmt(vals.budget)+(shownTotal<=vals.budget?'内':'超え');document.getElementById('budgetTrigger').classList.toggle('over',shownTotal>vals.budget);
  const advice=document.getElementById('budgetAdvice');
- const difference=total-vals.budget;
+ const difference=shownTotal-vals.budget;
  const fixedShare=gift+extraShare;
  const mealFactor=1+vals.teacherN/vals.mealN;
  const targetMeal=Math.floor((vals.budget-fixedShare)/mealFactor);
@@ -245,7 +246,7 @@ function shareText(){
   '💐 謝恩会 費用シミュレーター',
   '大人1人の会費（先生の費用を両方負担する場合）：約'+fmt(total),
   '全体の必要費用：約'+fmt(allTotal),
-  '大人1人で参加する場合の予算：'+fmt(vals.budget)+(total<=vals.budget?'以内':'超過'),
+  '大人1人で参加する場合の予算：'+fmt(vals.budget)+(Math.round(total)<=vals.budget?'以内':'超過'),
   '',
   '参加'+vals.familyN+'家庭／先生'+vals.teacherN+'名／子ども'+vals.childN+'名',
   '大人の食事代 '+fmt(vals.meal)+'・子ども '+fmt(vals.childMeal),
